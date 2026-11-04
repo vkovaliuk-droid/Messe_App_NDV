@@ -1142,7 +1142,7 @@ touch-action: pan-x pan-y;
     <div class="gallery-box" id="galleryBox">
       <img
         id="galleryImage"
-        src="bilder/NDV_Bild_1.jpg"
+        src="bilder/NDV_Bild_1.webp"
         alt="Durchlaufvorreiniger Typ NDV"
 >
 
@@ -1224,7 +1224,7 @@ touch-action: pan-x pan-y;
     <div class="model-viewer-box">
       <model-viewer
        id="productModel"
-       src="modelle/NDV40-60.glb"
+       src="modelle/NDV40-60_.glb"
        alt="Interaktives 3-D-Modell des Durchlaufvorreinigers"
        camera-controls
        touch-action="none"
@@ -1261,7 +1261,7 @@ touch-action: pan-x pan-y;
     </span>
 
     <span id="modelToggleText" data-i18n="openModel">
-      Produkt in 3-D ansehen
+      Produkt in 3D ansehen
     </span>
   </button>
 </section>
@@ -1408,13 +1408,13 @@ document.addEventListener("DOMContentLoaded", function () {
     galleryHint:
       "Sie können die Galerie auch nach links oder rechts wischen.",
 
-    openModel: "Produkt in 3-D ansehen",
+    openModel: "Produkt in 3D ansehen",
     closeModel: "Zurück zur Galerie",
-    modelLoading: "3-D-Modell wird geladen …",
+    modelLoading: "3D-Modell wird geladen …",
     modelInstructions:
       "<strong>Modell bedienen:</strong> Mit einem Finger drehen und mit zwei Fingern vergrößern.",
     modelError:
-      "Das 3-D-Modell konnte nicht geladen werden.",
+      "Das 3D-Modell konnte nicht geladen werden.",
 
     brochureLabel: "Prospekt",
     close: "Schließen",
@@ -1625,11 +1625,11 @@ document.addEventListener("DOMContentLoaded", function () {
   const mediaItems = [
     {
       type: "image",
-      src: "bilder/NDV_Bild_1.jpg"
+      src: "bilder/NDV_Bild_1.webp"
     },
     {
       type: "image",
-      src: "bilder/NDV_Bild_2.jpg"
+      src: "bilder/NDV_Bild_2.webp"
     },
     {
       type: "image",
@@ -1639,6 +1639,10 @@ document.addEventListener("DOMContentLoaded", function () {
       type: "image",
       src: "bilder/NDV_Bild_4.jpg"
     },    
+        {
+      type: "image",
+      src: "bilder/NDV_Bild_5.webp"
+    },  
   ];
 
   let currentMedia = 0;
@@ -1836,15 +1840,15 @@ const productModels = {
   "NDV15-35": {
     src: "modelle/NDV15-35.glb",
     altDe:
-      "3-D-Modell des Durchlaufvorreinigers NDV 15-35",
+      "3D-Modell des Durchlaufvorreinigers NDV 15-35",
     altEn:
       "3D model of the NDV 15-35 pre-cleaner"
   },
 
   "NDV40-60": {
-    src: "modelle/NDV40-60.glb",
+    src: "modelle/NDV40-60_.glb",
     altDe:
-      "3-D-Modell des Durchlaufvorreinigers NDV 40-60",
+      "3D-Modell des Durchlaufvorreinigers NDV 40-60",
     altEn:
       "3D model of the NDV 40-60 pre-cleaner"
   },
@@ -1852,7 +1856,7 @@ const productModels = {
   "NDV80-120": {
     src: "modelle/NDV80-120.glb",
     altDe:
-      "3-D-Modell des Durchlaufvorreinigers NDV 80-120",
+      "3D-Modell des Durchlaufvorreinigers NDV 80-120",
     altEn:
       "3D model of the NDV 80-120 pre-cleaner"
   }
@@ -1884,6 +1888,62 @@ function resetModelView() {
   if (typeof model.jumpCameraToGoal === "function") {
     model.jumpCameraToGoal();
   }
+}
+
+let initialModelRotationStarted = false;
+let initialRotationTimer = null;
+let interactionRotationTimer = null;
+
+function startInitialModelRotation() {
+  const model =
+    document.getElementById("productModel");
+
+  if (!model) {
+    return;
+  }
+
+  clearTimeout(initialRotationTimer);
+
+  model.removeAttribute("auto-rotate");
+
+  initialRotationTimer = window.setTimeout(
+    function () {
+      model.setAttribute("auto-rotate", "");
+      initialModelRotationStarted = true;
+    },
+    3000
+  );
+}
+
+function stopRotationDuringInteraction() {
+  const model =
+    document.getElementById("productModel");
+
+  if (!model) {
+    return;
+  }
+
+  clearTimeout(interactionRotationTimer);
+
+  model.removeAttribute("auto-rotate");
+}
+
+function restartRotationAfterInteraction() {
+  const model =
+    document.getElementById("productModel");
+
+  if (!model) {
+    return;
+  }
+
+  clearTimeout(interactionRotationTimer);
+
+  interactionRotationTimer = window.setTimeout(
+    function () {
+      model.setAttribute("auto-rotate", "");
+    },
+    10000
+  );
 }
 
 function selectProductModel(modelKey) {
@@ -1997,8 +2057,6 @@ function openModelView() {
   const toggleButton =
     document.getElementById("modelToggleButton");
 
-  resetModelView();  
-
   modelViewIsOpen = true;
 
   stopVideo();
@@ -2011,14 +2069,36 @@ function openModelView() {
     modelView.classList.add("active");
   }
 
+  requestAnimationFrame(function () {
+    resetModelView();
+
+    if (!initialModelRotationStarted) {
+      startInitialModelRotation();
+    } else {
+      const model =
+        document.getElementById("productModel");
+
+      if (model) {
+        model.setAttribute("auto-rotate", "");
+      }
+    }
+  });
+
   if (toggleText) {
-  toggleText.setAttribute("data-i18n", "closeModel");
-  toggleText.innerHTML =
-    translations[currentLanguage].closeModel;
+    toggleText.setAttribute(
+      "data-i18n",
+      "closeModel"
+    );
+
+    toggleText.innerHTML =
+      translations[currentLanguage].closeModel;
   }
 
   if (toggleButton) {
-    toggleButton.setAttribute("aria-pressed", "true");
+    toggleButton.setAttribute(
+      "aria-pressed",
+      "true"
+    );
   }
 }
 
@@ -2072,25 +2152,63 @@ const modelError =
   document.getElementById("modelError");
 
 if (productModel) {
-  productModel.addEventListener("load", function () {
-    if (modelLoading) {
-      modelLoading.style.display = "none";
-    }
+  productModel.addEventListener(
+    "pointerdown",
+    stopRotationDuringInteraction
+  );
 
-    if (modelError) {
-      modelError.classList.remove("active");
-    }
-  });
+  productModel.addEventListener(
+    "pointerup",
+    restartRotationAfterInteraction
+  );
 
-  productModel.addEventListener("error", function () {
-    if (modelLoading) {
-      modelLoading.style.display = "none";
-    }
+  productModel.addEventListener(
+    "pointercancel",
+    restartRotationAfterInteraction
+  );
 
-    if (modelError) {
-      modelError.classList.add("active");
+  productModel.addEventListener(
+    "touchend",
+    restartRotationAfterInteraction,
+    { passive: true }
+  );
+
+  productModel.addEventListener(
+    "load",
+    function () {
+      if (modelLoading) {
+        modelLoading.style.display = "none";
+      }
+
+      if (modelError) {
+        modelError.classList.remove("active");
+      }
+
+      if (modelViewIsOpen) {
+        resetModelView();
+
+        if (initialModelRotationStarted) {
+          productModel.setAttribute(
+            "auto-rotate",
+            ""
+          );
+        }
+      }
     }
-  });
+  );
+
+  productModel.addEventListener(
+    "error",
+    function () {
+      if (modelLoading) {
+        modelLoading.style.display = "none";
+      }
+
+      if (modelError) {
+        modelError.classList.add("active");
+      }
+    }
+  );
 }
 
   let startX = 0;
