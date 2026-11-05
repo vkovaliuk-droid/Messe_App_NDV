@@ -1,4 +1,4 @@
-const CACHE_NAME = "neuero-messe-app-v2";
+const CACHE_NAME = "neuero-messe-app-v3";
 
 /*
   Alle Dateien, die für den Offlinebetrieb benötigt werden.
